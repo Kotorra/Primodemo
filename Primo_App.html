@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primo · App funcional (demo)</title>
+<style>
+  :root{--navy:#0F1E3D;--navy2:#16294A;--green:#16C784;--greend:#0C9663;--lime:#C6F064;
+        --yellow:#FFD166;--ink:#222831;--gray:#8A95A5;--dgray:#3A4555;--lgray:#F0F3F8;--card:#F7F9FC;--red:#EB5757;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+  body{min-height:100vh;background:radial-gradient(1200px 700px at 70% -10%,#1b3358,#0b1526 55%,#070d18);
+       display:flex;flex-direction:column;align-items:center;padding:22px 12px 50px;color:#fff;}
+  .head{text-align:center;margin-bottom:14px;}
+  .head h1{font-size:22px;letter-spacing:.5px;} .head h1 b{color:var(--green);}
+  .head p{font-size:12px;color:#9fb0c9;margin-top:3px;}
+  .stage{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+  .phone{width:344px;height:716px;background:#0c111c;border-radius:46px;padding:13px;box-shadow:0 30px 70px rgba(0,0,0,.55);flex:none;}
+  .sw{width:100%;height:100%;border-radius:34px;overflow:hidden;position:relative;background:#fff;}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;}
+  .screen.active{display:flex;animation:fade .28s ease;}
+  @keyframes fade{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:none;}}
+  .screen::-webkit-scrollbar{width:0;}
+  .sb{display:flex;justify-content:space-between;align-items:center;padding:13px 22px 2px;font-size:12px;font-weight:700;flex:none;}
+  .dots{display:flex;gap:3px;align-items:flex-end;} .dots i{width:4px;background:currentColor;border-radius:1px;}
+  .dots i:nth-child(1){height:5px}.dots i:nth-child(2){height:8px}.dots i:nth-child(3){height:11px}.dots i:nth-child(4){height:14px}
+  .pad{padding:8px 22px 22px;flex:1;}
+  .navy{background:var(--navy);color:#fff;}.light{background:#fff;color:var(--ink);}.lg{background:var(--lgray);}
+  h2{font-size:25px;line-height:1.15;margin:6px 0;}
+  .sub{color:var(--dgray);font-size:13.5px;line-height:1.45;} .navy .sub{color:#aebbd0;}
+  .btn{display:block;width:100%;border:none;cursor:pointer;background:var(--green);color:#fff;font-size:16px;font-weight:800;padding:15px;border-radius:30px;margin-top:14px;transition:.15s;}
+  .btn:hover{filter:brightness(1.06);}.btn:active{transform:translateY(1px);} .btn[disabled]{opacity:.5;cursor:not-allowed;}
+  .btn.ghost{background:transparent;color:#aebbd0;font-weight:600;font-size:13px;padding:9px;}
+  .btn.sm{width:auto;padding:9px 20px;font-size:13px;border-radius:20px;}
+  .btn.line{background:transparent;border:2px solid var(--green);color:var(--greend);}
+  .back{font-size:25px;font-weight:800;cursor:pointer;width:30px;}
+  .field{margin-top:14px;} .field label{font-size:12px;color:var(--gray);}
+  .field input{width:100%;margin-top:5px;padding:13px 15px;border:2px solid #d8dee8;border-radius:14px;font-size:15px;color:var(--ink);}
+  .field input:focus{outline:none;border-color:var(--green);}
+  .err{color:var(--red);font-size:12px;margin-top:6px;display:none;}
+  .row{background:var(--card);border-radius:16px;padding:13px 15px;margin-top:11px;display:flex;justify-content:space-between;align-items:center;}
+  .row .t{font-weight:800;font-size:14px;color:var(--navy);} .row .s{font-size:11.5px;color:var(--dgray);margin-top:2px;}
+  .tog{width:50px;height:29px;border-radius:15px;background:#cdd2dc;position:relative;cursor:pointer;flex:none;transition:.2s;}
+  .tog.on{background:var(--green);}.tog::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:.2s;}.tog.on::after{left:24px;}
+  .pill{background:#E8F7F0;color:var(--greend);font-weight:700;font-size:12px;padding:10px 13px;border-radius:13px;margin-top:13px;}
+  .gwrap{position:relative;width:190px;height:190px;margin:6px auto 0;}
+  .gauge{width:190px;height:190px;border-radius:50%;background:conic-gradient(var(--green) var(--deg,0deg),#e4e9f0 var(--deg,0deg));-webkit-mask:radial-gradient(transparent 58%,#000 59%);mask:radial-gradient(transparent 58%,#000 59%);}
+  .gtext{position:absolute;inset:0;display:grid;place-items:center;text-align:center;}
+  .gtext .n{font-size:50px;font-weight:800;color:var(--navy);line-height:1;} .gtext .l{font-size:13px;font-weight:700;color:var(--greend);}
+  .card{background:#fff;border-radius:18px;padding:15px;margin-top:13px;box-shadow:0 6px 18px rgba(20,30,50,.06);} .navy .card{background:var(--navy2);box-shadow:none;}
+  .stat{font-size:40px;font-weight:800;} .green{color:var(--green);}.gd{color:var(--greend);}.muted{color:var(--gray);}
+  .factor{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dgray);margin-top:8px;}
+  .factor .bar{flex:1;height:7px;background:#e6eaf0;border-radius:4px;margin:0 10px;overflow:hidden;} .factor .bar i{display:block;height:100%;background:var(--green);}
+  input[type=range]{width:100%;accent-color:var(--green);margin:8px 0;}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;color:var(--dgray);} .kv b{color:var(--navy);}
+  .kv.total{background:var(--card);border-radius:13px;padding:11px;margin-top:5px;} .kv.total b{color:var(--greend);font-size:17px;}
+  .bnav{display:flex;justify-content:space-around;padding:11px 6px 15px;background:#fff;border-top:1px solid #eef1f6;flex:none;}
+  .bnav div{font-size:10.5px;color:var(--gray);text-align:center;cursor:pointer;font-weight:600;}
+  .bnav .ic{width:20px;height:20px;border:2.5px solid currentColor;border-radius:50%;margin:0 auto 3px;} .bnav div.act{color:var(--green);}
+  .big{font-size:46px;font-weight:800;}
+  .check{width:96px;height:96px;border-radius:50%;background:var(--green);display:grid;place-items:center;margin:20px auto 0;font-size:50px;color:#fff;}
+  .lvl{display:inline-block;background:rgba(198,240,100,.18);color:var(--lime);font-size:11px;font-weight:700;padding:4px 11px;border-radius:11px;margin-top:6px;}
+  .module{display:flex;align-items:center;gap:11px;background:#fff;border-radius:16px;padding:12px;margin-top:10px;cursor:pointer;}
+  .module .mic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;flex:none;font-size:15px;}
+  .module .t{font-weight:800;font-size:13.5px;color:var(--navy);} .module .s{font-size:11.5px;color:var(--dgray);}
+  .spin{width:42px;height:42px;border:4px solid #e4e9f0;border-top-color:var(--green);border-radius:50%;animation:sp 0.8s linear infinite;margin:24px auto;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .toast{position:absolute;left:18px;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:13px 16px;border-radius:14px;font-size:13px;opacity:0;transform:translateY(20px);transition:.3s;z-index:30;box-shadow:0 10px 30px rgba(0,0,0,.3);}
+  .toast.show{opacity:1;transform:none;} .toast b{color:var(--lime);}
+  /* bank module */
+  .secure{display:flex;align-items:center;gap:8px;background:#EAF1FF;color:#234;border-radius:12px;padding:9px 12px;font-size:11px;margin-top:10px;} .secure b{color:#2D6CDF;}
+  .banks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .bank{border:1.5px solid #e7ecf3;border-radius:15px;padding:14px 10px;text-align:center;cursor:pointer;transition:.15s;background:#fff;}
+  .bank:hover{border-color:var(--green);box-shadow:0 8px 18px rgba(20,30,50,.08);transform:translateY(-2px);}
+  .bank .blg{width:42px;height:42px;border-radius:11px;margin:0 auto 7px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:17px;}
+  .bank .bnm{font-size:12px;font-weight:700;color:var(--navy);line-height:1.2;}
+  .bankhdr{display:flex;align-items:center;gap:11px;padding:14px 22px;color:#fff;flex:none;}
+  .bankhdr .blg{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;font-weight:800;background:rgba(255,255,255,.18);}
+  .demo-note{background:#FFF8E6;border:1px solid #FFE3A3;color:#7a5b00;font-size:11px;padding:9px 12px;border-radius:11px;margin-top:12px;}
+  .perm{display:flex;gap:10px;align-items:flex-start;margin-top:12px;}
+  .perm .ck{width:23px;height:23px;border-radius:7px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;flex:none;}
+  .perm .t{font-size:13px;color:var(--navy);font-weight:700;} .perm .s{font-size:11.5px;color:var(--dgray);}
+  .steps{font-size:13px;color:var(--dgray);margin-top:12px;}
+  .steps div{padding:7px 0;display:flex;align-items:center;gap:9px;opacity:.35;transition:.3s;}
+  .steps div.done{opacity:1;color:var(--greend);font-weight:600;}
+  .steps .mk{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;font-size:11px;}
+  .tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:7px;margin-left:5px;vertical-align:middle;}
+  .tag.serv{background:#E6F0FF;color:#2D6CDF;}.tag.sub{background:#F0E8FF;color:#7A3CD0;}.tag.inc{background:#E4F7EF;color:var(--greend);}
+  .tx{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eef1f6;font-size:12.5px;}
+  .tx .td{color:var(--gray);font-size:10.5px;} .tx .amt{font-weight:700;}.tx .amt.in{color:var(--greend);}.tx .amt.out{color:var(--ink);}
+  /* modo presentación */
+  .pnav{max-width:980px;margin:0 auto 16px;background:#0f1b2e;border:1px solid #1c2c44;border-radius:16px;padding:12px 14px;}
+  .pnav .ttl{font-size:12px;color:var(--lime);font-weight:700;letter-spacing:.5px;margin-bottom:8px;}
+  .pnav .ttl span{color:#7f8ca3;font-weight:400;letter-spacing:0;}
+  .pnav .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .pnav .chip{background:#16294A;color:#cdd6e6;border:none;cursor:pointer;font-size:11.5px;font-weight:600;
+              padding:6px 11px;border-radius:14px;transition:.15s;}
+  .pnav .chip:hover{background:var(--green);color:#0b1526;}
+  .pnav .chip.seed{background:var(--green);color:#0b1526;font-weight:800;}
+  .pnav .chip.reset{background:transparent;border:1px solid #36476a;color:#9fb0c9;}
+  /* tech panel */
+  .tech{width:360px;flex:none;background:#0a1320;border:1px solid #1c2c44;border-radius:18px;padding:16px;color:#cdd6e6;max-height:716px;overflow-y:auto;}
+  .tech h3{font-size:14px;color:var(--green);margin-bottom:4px;} .tech .desc{font-size:11.5px;color:#7f8ca3;margin-bottom:12px;line-height:1.5;}
+  .log{font-family:Consolas,Menlo,monospace;font-size:11px;line-height:1.7;}
+  .log .e{padding:7px 9px;border-radius:8px;background:#0f1b2e;margin-bottom:6px;border-left:3px solid var(--green);}
+  .log .e.real{border-left-color:var(--yellow);} .log .m{color:#6f8;} .log .real .m{color:var(--yellow);}
+  .log .u{color:#7f8ca3;} .log .d{color:#aebbd0;display:block;margin-top:2px;}
+  .tech .note{font-size:11px;color:#7f8ca3;margin-top:12px;border-top:1px solid #1c2c44;padding-top:10px;}
+  .tech .note b{color:var(--yellow);}
+  @media(max-width:760px){.tech{width:344px;max-height:none;}}
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1><b>PRIMO</b> · App funcional (demo)</h1>
+    <p>Backend simulado. La capa bancaria es <b style="color:#FFD166">mock</b> — mira el panel técnico → dónde se conectaría la banca real. <a href="#" onclick="resetApp();return false" style="color:var(--lime)">Reiniciar</a></p>
+  </div>
+
+  <div class="pnav">
+    <div class="ttl">MODO PRESENTACIÓN <span>· salta a cualquier pantalla para el recorrido</span></div>
+    <div class="chips">
+      <button class="chip seed" onclick="demoSeed()">★ Cargar usuario demo</button>
+      <button class="chip" onclick="navTo('welcome')">Bienvenida</button>
+      <button class="chip" onclick="navTo('register')">Registro</button>
+      <button class="chip" onclick="navTo('connect')">Conectar datos</button>
+      <button class="chip" onclick="navTo('bankpicker')">Elegir banco</button>
+      <button class="chip" onclick="navTo('banklogin')">Login banco</button>
+      <button class="chip" onclick="navTo('bankconsent')">Permisos</button>
+      <button class="chip" onclick="navTo('score')">Puntaje</button>
+      <button class="chip" onclick="navTo('home')">Inicio</button>
+      <button class="chip" onclick="navTo('credit')">Crédito</button>
+      <button class="chip" onclick="navTo('confirm')">Confirmación</button>
+      <button class="chip" onclick="navTo('pay')">Pagar</button>
+      <button class="chip" onclick="navTo('learn')">Aprende</button>
+      <button class="chip" onclick="navTo('profile')">Perfil</button>
+      <button class="chip reset" onclick="resetApp()">Reiniciar</button>
+    </div>
+  </div>
+
+  <div class="stage">
+   <!-- PHONE -->
+   <div class="phone"><div class="sw" id="sw">
+
+    <!-- WELCOME -->
+    <section class="screen navy active" id="welcome" style="justify-content:center;text-align:center;padding:0 30px;">
+      <div style="font-size:60px;font-weight:800;color:var(--green);">PRIMO</div>
+      <div style="font-size:22px;font-weight:800;margin-top:6px;">Tu primer sí.</div>
+      <p class="sub" style="margin-top:10px;">El primer crédito para quien nunca tuvo historial.</p>
+      <div style="width:120px;height:120px;border:5px solid var(--green);border-radius:50%;display:grid;place-items:center;margin:30px auto;font-size:56px;font-weight:800;color:var(--lime);">$</div>
+      <button class="btn" onclick="go('register')">Empezar</button>
+    </section>
+
+    <!-- REGISTER -->
+    <section class="screen light" id="register">
+      <div class="sb" style="color:var(--navy)"><span>9:41</span><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <div class="back" onclick="go('welcome')">‹</div>
+        <h2 style="color:var(--navy)">Crea tu cuenta</h2>
+        <p class="sub">Toma menos de 2 minutos.</p>
+        <div class="field"><label>Nombre completo</label><input id="r_name" value="Mariana Soto"></div>
+        <div class="field"><label>Número de celular</label><input id="r_phone" value="+506 8888 8888"></div>
+        <div class="field"><label>Correo electrónico</label><input id="r_email" value="mariana@email.com"></div>
+        <div class="err" id="r_err">Completa todos los campos.</div>
+        <div class="factor" style="margin-top:14px;justify-content:flex-start;gap:10px;"><span style="width:13px;height:13px;border-radius:50%;background:var(--green);display:inline-block"></span> Acepto términos en lenguaje simple</div>
+        <button class="btn" onclick="doRegister()">Crear mi cuenta</button>
+      </div>
+    </section>
+
+    <!-- CONNECT -->
+    <section class="screen light" id="connect">
+      <div class="sb" style="color:var(--navy)"><span>9:41</span><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <div class="back" onclick="go('register')">‹</div>
+        <h2 style="color:var(--navy)">Conecta tus datos</h2>
+        <p class="sub">Con tu permiso leemos señales que la banca no mira. Tú decides.</p>
+        <div class="row"><div><div class="t">Pagos de servicios</div><div class="s">Luz, agua, internet, recargas</div></div><div class="tog on" data-src="servicios" onclick="this.classList.toggle('on')"></div></div>
+        <div class="row"><div><div class="t">Suscripciones digitales</div><div class="s">Streaming y apps</div></div><div class="tog on" data-src="suscripciones" onclick="this.classList.toggle('on')"></div></div>
+        <div class="row"><div><div class="t">Ingresos gig / freelance</div><div class="s">Reparto, ventas, billeteras</div></div><div class="tog on" data-src="ingresos" onclick="this.classList.toggle('on')"></div></div>
+        <div class="row"><div><div class="t">Uso del teléfono</div><div class="s">Sin leer contenido privado</div></div><div class="tog" data-src="dispositivo" onclick="this.classList.toggle('on')"></div></div>
+        <div class="pill">🔒 Tus datos están cifrados y protegidos.</div>
+        <button class="btn" onclick="startBank()">Conectar mi banco (Open Finance)</button>
+      </div>
+    </section>
+
+    <!-- BANK PICKER -->
+    <section class="screen light" id="bankpicker">
+      <div class="sb" style="color:var(--navy)"><span>9:41</span><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <div class="back" onclick="go('connect')">‹</div>
+        <h2 style="color:var(--navy)">Elige tu banco</h2>
+        <p class="sub">Costa Rica · conexión segura vía Open Finance.</p>
+        <div class="banks" id="bankGrid"></div>
+        <div class="secure"><span>🔒</span><div>Powered by <b>Open Finance CR</b> · sandbox de demostración</div></div>
+      </div>
+    </section>
+
+    <!-- BANK LOGIN -->
+    <section class="screen light" id="banklogin">
+      <div class="bankhdr" id="loginHdr" style="background:var(--navy);"><div class="blg" id="loginLg">B</div><div><div style="font-weight:800;" id="loginNm">Banco</div><div style="font-size:11px;opacity:.8;">Banca en línea</div></div></div>
+      <div class="pad">
+        <div class="back" onclick="go('bankpicker')">‹</div>
+        <h2 style="color:var(--navy)">Ingresa a tu banca</h2>
+        <p class="sub">Tus credenciales viajan cifradas y <b>no se comparten</b> con Primo.</p>
+        <div class="field"><label>Usuario</label><input value="usuario.demo"></div>
+        <div class="field"><label>Contraseña</label><input type="password" value="demo1234"></div>
+        <div class="demo-note">🧪 <b>Modo demo:</b> credenciales precargadas. No se envían a ningún banco real — el flujo es simulado.</div>
+        <button class="btn" onclick="go('bankconsent')">Ingresar de forma segura</button>
+      </div>
+    </section>
+
+    <!-- BANK CONSENT -->
+    <section class="screen light" id="bankconsent">
+      <div class="sb" style="color:var(--navy)"><span>9:41</span><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <h2 style="color:var(--navy)">Autoriza el acceso</h2>
+        <p class="sub"><b id="cs_bank">Tu banco</b> compartirá con Primo, solo para calcular tu puntaje:</p>
+        <div class="perm"><div class="ck">✓</div><div><div class="t">Saldos de tus cuentas</div><div class="s">Saldo actual, sin mover tu dinero</div></div></div>
+        <div class="perm"><div class="ck">✓</div><div><div class="t">Transacciones (12 meses)</div><div class="s">Pagos de servicios, suscripciones e ingresos</div></div></div>
+        <div class="perm"><div class="ck">✓</div><div><div class="t">Datos básicos de la cuenta</div><div class="s">Titular y antigüedad</div></div></div>
+        <div class="secure"><span>⏱</span><div>Permiso válido por 90 días · revocable cuando quieras.</div></div>
+        <button class="btn" onclick="bankConnect()">Autorizar y conectar</button>
+        <button class="btn ghost" onclick="go('bankpicker')" style="color:var(--gray)">Cancelar</button>
+      </div>
+    </section>
+
+    <!-- BANK LOADING -->
+    <section class="screen light" id="bankloading" style="text-align:center;">
+      <div class="sb" style="color:var(--navy)"><span>9:41</span><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <div class="spin"></div>
+        <h2 style="color:var(--navy)">Conectando…</h2>
+        <p class="sub">Estableciendo conexión segura con tu banco.</p>
+        <div class="steps" id="bsteps">
+          <div><span class="mk">1</span> Autenticando con el banco</div>
+          <div><span class="mk">2</span> Leyendo cuentas y saldos</div>
+          <div><span class="mk">3</span> Descargando 12 meses de transacciones</div>
+          <div><span class="mk">4</span> Calculando tu Puntaje de Potencial</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCORE -->
+    <section class="screen light" id="score">
+      <div class="sb navy" style="color:#fff;padding-bottom:12px;"><span>9:41</span><div class="dots" style="color:#fff"><i></i><i></i><i></i><i></i></div></div>
+      <div class="navy" style="text-align:center;padding:0 22px 16px;">
+        <div style="font-size:17px;font-weight:800;">Tu Puntaje de Potencial</div>
+        <div class="sub" style="font-size:11px;">Calculado con tus datos reales</div>
+      </div>
+      <div class="pad">
+        <div class="gwrap"><div class="gauge" id="g"></div><div class="gtext"><div><div class="n" id="gn">0</div><div class="l" id="gl">—</div><div style="font-size:11px;color:var(--gray)">de 1000</div></div></div></div>
+        <div class="card" style="background:var(--card);">
+          <div class="sub">Calificas para tu</div>
+          <div style="font-size:22px;font-weight:800;color:var(--navy)" id="bandTxt">primer crédito</div>
+          <div class="sub" style="font-size:11.5px;">Sin historial. Sin papeleo. Sin filas.</div>
+        </div>
+        <div style="font-weight:800;color:var(--navy);margin-top:13px;font-size:13.5px;">Cómo se formó tu puntaje</div>
+        <div id="breakdown"></div>
+        <button class="btn" onclick="go('home')">Activar mi primer crédito</button>
+      </div>
+    </section>
+
+    <!-- HOME -->
+    <section class="screen lg" id="home">
+      <div class="navy" style="padding:13px 22px 16px;border-radius:0 0 22px 22px;">
+        <div class="sb" style="color:#fff;padding:0 0 8px;"><span>9:41</span><div class="dots" style="color:#fff"><i></i><i></i><i></i><i></i></div></div>
+        <div style="font-size:21px;font-weight:800;" id="h_hi">Hola</div>
+        <div class="lvl" id="h_lvl">Nivel 1 · Constructor</div>
+      </div>
+      <div class="pad" style="padding-top:13px;">
+        <div class="card">
+          <div class="sub" style="font-size:11.5px;">Tu Puntaje</div>
+          <div style="display:flex;align-items:baseline;gap:12px;"><div class="stat" style="color:var(--navy)" id="h_score">—</div><div class="gd" style="font-weight:800;" id="h_delta"></div></div>
+          <div class="sub" style="font-size:11.5px;margin-top:4px;" id="h_next">Sigue pagando para subir de nivel</div>
+        </div>
+        <div class="card" id="h_creditcard" style="background:var(--green);color:#fff;cursor:pointer;" onclick="go('credit')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:12px;opacity:.9;">Crédito disponible</div><div class="big" id="h_avail">$150</div>
+            <div style="font-size:11.5px;opacity:.9;" id="h_creditsub">Toca para solicitarlo</div></div>
+            <button class="btn sm" style="background:#fff;color:var(--navy);">Usar</button>
+          </div>
+        </div>
+        <div class="card" style="display:none;" id="h_balancecard">
+          <div class="sub" style="font-size:11.5px;">Saldo recibido</div>
+          <div class="stat gd" id="h_balance">$0</div>
+          <div class="sub" style="font-size:11.5px;" id="h_loaninfo"></div>
+          <button class="btn line" style="margin-top:10px;" onclick="go('pay')">Pagar mi cuota</button>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="go('learn')">
+          <div class="t" style="font-weight:800;color:var(--navy);">Educación financiera</div>
+          <div class="sub" style="font-size:11.5px;">Completa y baja tu tasa</div>
+          <div style="height:13px;background:#e6eaf0;border-radius:7px;margin-top:9px;overflow:hidden;"><div id="h_eduprog" style="width:0%;height:100%;background:var(--yellow);transition:.4s;"></div></div>
+        </div>
+        <div class="card">
+          <div class="t" style="font-weight:800;color:var(--navy);">Historial en construcción</div>
+          <div class="sub" style="font-size:11.5px;" id="h_histsub">Aún sin pagos reportados</div>
+          <div class="bars" id="h_bars" style="display:flex;gap:7px;align-items:flex-end;height:64px;margin-top:9px;"></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <div class="act" onclick="go('home')"><div class="ic"></div>Inicio</div>
+        <div onclick="go('credit')"><div class="ic"></div>Crédito</div>
+        <div onclick="go('learn')"><div class="ic"></div>Aprende</div>
+        <div onclick="go('profile')"><div class="ic"></div>Perfil</div>
+      </div>
+    </section>
+
+    <!-- CREDIT -->
+    <section class="screen light" id="credit">
+      <div class="sb" style="color:var(--navy)"><span>9:41</span><div class="dots" style="color:var(--navy)"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <div class="back" onclick="go('home')">‹</div>
+        <h2 style="color:var(--navy);text-align:center;">Tu primer crédito</h2>
+        <div class="card" style="background:var(--navy);color:#fff;text-align:center;">
+          <div class="sub" style="font-size:11.5px;">Monto</div>
+          <div class="big green" id="amt">$150</div>
+          <input type="range" min="75" max="300" step="25" value="150" id="slider" oninput="calc()">
+          <div class="sub" style="font-size:11px;">Deslizá para elegir tu monto (tope según tu nivel)</div>
+        </div>
+        <div style="font-weight:800;color:var(--navy);margin-top:13px;">Costo total, sin sorpresas</div>
+        <div class="kv"><span>Monto que recibes</span><b id="kr">$150.00</b></div>
+        <div class="kv"><span>Plazo</span><b>3 meses</b></div>
+        <div class="kv"><span>Cuota mensual</span><b id="kc">$56.75</b></div>
+        <div class="kv"><span>Tasa de interés</span><b id="krate">3.5% mensual</b></div>
+        <div class="kv"><span>Comisión de apertura</span><b id="kf">$4.50</b></div>
+        <div class="kv total"><span style="font-weight:800;color:var(--navy)">Total a pagar</span><b id="kt">$170.25</b></div>
+        <button class="btn" id="creditBtn" onclick="doCredit()">Aceptar y recibir mi dinero</button>
+        <div id="creditLoad" style="display:none;text-align:center;"><div class="spin"></div><div class="sub">Procesando desembolso…</div></div>
+      </div>
+    </section>
+
+    <!-- CONFIRM -->
+    <section class="screen navy" id="confirm" style="text-align:center;">
+      <div class="sb" style="color:#fff"><span>9:41</span><div class="dots" style="color:#fff"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <div class="check">✓</div>
+        <h2 style="margin-top:16px;">¡Listo!</h2>
+        <p class="sub">Tu dinero va en camino</p>
+        <div class="card"><div class="sub" style="font-size:11.5px;">Recibes</div><div class="big green" id="camt">$150.00</div><div class="sub" style="font-size:11.5px;">en tu cuenta en segundos</div></div>
+        <div class="pill" style="display:block;">✓ Reportado al buró desde HOY</div>
+        <button class="btn" onclick="go('home')">Ir a mi inicio</button>
+      </div>
+    </section>
+
+    <!-- PAY -->
+    <section class="screen light" id="pay">
+      <div class="sb" style="color:var(--navy)"><span>9:41</span><div class="dots" style="color:var(--navy)"><i></i><i></i><i></i><i></i></div></div>
+      <div class="pad">
+        <div class="back" onclick="go('home')">‹</div>
+        <h2 style="color:var(--navy)">Pagar mi cuota</h2>
+        <p class="sub">Cada pago a tiempo sube tu puntaje y construye tu historial.</p>
+        <div class="card" style="background:var(--card);text-align:center;">
+          <div class="sub" style="font-size:11.5px;">Cuota de este mes</div>
+          <div class="big" style="color:var(--navy)" id="pay_amt">$56.75</div>
+          <div class="sub" style="font-size:11.5px;" id="pay_left"></div>
+        </div>
+        <div class="pill">Pagando hoy: <b style="color:var(--greend)">+15 puntos</b> y 1 mes reportado al buró.</div>
+        <button class="btn" id="payBtn" onclick="doPay()">Pagar con SINPE Móvil</button>
+        <div id="payLoad" style="display:none;text-align:center;"><div class="spin"></div><div class="sub">Procesando pago…</div></div>
+      </div>
+    </section>
+
+    <!-- LEARN -->
+    <section class="screen lg" id="learn">
+      <div style="background:var(--green);color:#fff;padding:13px 22px 16px;border-radius:0 0 22px 22px;">
+        <div class="sb" style="color:#fff;padding:0 0 8px;"><span>9:41</span><div class="dots" style="color:#fff"><i></i><i></i><i></i><i></i></div></div>
+        <div style="font-size:21px;font-weight:800;">Aprende y gana</div>
+        <div class="sub" style="color:#dffaee;font-size:12.5px;">Completa módulos y baja tu tasa</div>
+      </div>
+      <div class="pad" style="padding-top:13px;">
+        <div class="card" style="display:flex;justify-content:space-between;align-items:center;"><b style="color:var(--navy)">Progreso</b><b class="gd" id="edu_xp">0 / 3 módulos</b></div>
+        <div id="modules"></div>
+        <div class="card" style="background:var(--navy);color:#fff;"><b style="color:var(--yellow)">Recompensa al 100%</b><div style="font-size:12.5px;margin-top:4px;">Tu tasa baja a 2.9% y tu límite sube a $250</div></div>
+      </div>
+      <div class="bnav">
+        <div onclick="go('home')"><div class="ic"></div>Inicio</div>
+        <div onclick="go('credit')"><div class="ic"></div>Crédito</div>
+        <div class="act" onclick="go('learn')"><div class="ic"></div>Aprende</div>
+        <div onclick="go('profile')"><div class="ic"></div>Perfil</div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="screen lg" id="profile">
+      <div class="navy" style="text-align:center;padding:13px 22px 20px;border-radius:0 0 22px 22px;">
+        <div class="sb" style="color:#fff;padding:0 0 6px;"><span>9:41</span><div class="dots" style="color:#fff"><i></i><i></i><i></i><i></i></div></div>
+        <div style="width:78px;height:78px;border-radius:50%;background:var(--green);display:grid;place-items:center;font-size:34px;font-weight:800;color:var(--navy);margin:6px auto 0;" id="p_initial">M</div>
+        <div style="font-size:19px;font-weight:800;margin-top:8px;" id="p_name">—</div>
+        <div class="lvl" id="p_lvl">Nivel 1 · Constructor</div>
+      </div>
+      <div class="pad" style="padding-top:13px;">
+        <div style="display:flex;gap:11px;">
+          <div class="card" style="flex:1;"><div class="sub" style="font-size:11.5px;">Puntaje</div><div class="stat" style="color:var(--navy)" id="p_score">—</div></div>
+          <div class="card" style="flex:1;"><div class="sub" style="font-size:11.5px;">Cuotas pagadas</div><div class="stat gd" id="p_paid">0</div></div>
+        </div>
+        <div class="row"><div class="t">Mis datos y privacidad</div><b class="muted">›</b></div>
+        <div class="row"><div class="t">Métodos de pago</div><b class="muted">›</b></div>
+        <div class="row"><div class="t">Notificaciones</div><b class="muted">›</b></div>
+        <div class="row" onclick="resetApp()" style="cursor:pointer;"><div class="t" style="color:var(--red)">Cerrar sesión / Reiniciar demo</div><b class="muted">›</b></div>
+      </div>
+      <div class="bnav">
+        <div onclick="go('home')"><div class="ic"></div>Inicio</div>
+        <div onclick="go('credit')"><div class="ic"></div>Crédito</div>
+        <div onclick="go('learn')"><div class="ic"></div>Aprende</div>
+        <div class="act" onclick="go('profile')"><div class="ic"></div>Perfil</div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+   </div></div>
+
+   <!-- TECH PANEL -->
+   <div class="tech">
+     <h3>Panel técnico · capa de integración</h3>
+     <div class="desc">Cada acción muestra la llamada que el backend de Primo haría. <span style="color:var(--green)">Verde</span> = lógica propia (real). <span style="color:var(--yellow)">Amarillo</span> = punto donde se conecta la <b>banca en línea</b> (hoy simulado).</div>
+     <div class="log" id="log"></div>
+     <div class="note">En producción, los nodos amarillos se reemplazan por APIs reales de <b>BaaS (Dock / Pomelo)</b>, <b>Open Finance Costa Rica</b>, <b>SINPE</b> y <b>buró de crédito</b>. Ver el documento de arquitectura.</div>
+   </div>
+  </div>
+
+<script>
+/* ================= "BACKEND" SIMULADO ================= */
+const DB_KEY='primo_db_v1';
+let DB=loadDB();
+function loadDB(){ try{ const r=localStorage.getItem(DB_KEY); if(r) return JSON.parse(r);}catch(e){} return null; }
+function saveDB(){ try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){} }
+function freshUser(){ return {name:'',phone:'',email:'',sources:[],bankData:null,score:null,band:'',breakdown:[],
+   level:1,credit:{active:false,amount:0,balance:0,paidInstallments:0,installment:0,rate:0.035},
+   eduDone:0,history:[],delta:0}; }
+
+/* --- LOG del panel técnico --- */
+function log(method,url,detail,real){
+  const box=document.getElementById('log');
+  const e=document.createElement('div'); e.className='e'+(real?' real':'');
+  e.innerHTML='<span class="m">'+method+'</span> <span class="u">'+url+'</span><span class="d">'+detail+'</span>';
+  box.prepend(e);
+}
+
+/* --- BankConnector: SIMULA Open Finance / BaaS --- */
+const BankConnector = {
+  // INTEGRACIÓN REAL: aquí se llamaría a un agregador Open Finance (Belvo/Prometeo)
+  // o al BaaS para leer cuentas y transacciones del usuario.
+  fetchData(sources){
+    log('GET','/integracion/open-finance/transacciones','Solicitando datos de: '+sources.join(', ')+' (SIMULADO)',true);
+    // Dataset simulado, determinista para la demo
+    const ds={
+      servicios:{label:'Pagos de servicios al día',sub:82},
+      suscripciones:{label:'Suscripciones activas',sub:64},
+      ingresos:{label:'Ingresos gig verificados',sub:70},
+      dispositivo:{label:'Estabilidad del dispositivo',sub:60},
+    };
+    const out={};
+    sources.forEach(s=>{ if(ds[s]) out[s]=ds[s]; });
+    return out;
+  }
+};
+
+/* --- ScoringEngine: lógica PROPIA (real) --- */
+const ScoringEngine = {
+  weights:{servicios:0.30, ingresos:0.20, suscripciones:0.15, dispositivo:0.10},
+  // pesos faltantes (comportamiento app 15%, datos declarados 10%) se asumen base en la demo
+  baseSub:62,
+  compute(bankData){
+    log('POST','/scoring/calcular','Motor propio de IA pondera las señales (real)');
+    let total=0, wsum=0; const bd=[];
+    const W={servicios:0.30, ingresos:0.20, suscripciones:0.15, dispositivo:0.10};
+    for(const k in W){
+      const sub = bankData[k] ? bankData[k].sub : this.baseSub;
+      const label = bankData[k] ? bankData[k].label : k;
+      total += sub*W[k]; wsum += W[k];
+      bd.push({label, sub, weight:W[k]});
+    }
+    // categorías base (app + declarados) = 25%
+    const baseScore=62; total += baseScore*0.25; wsum+=0.25;
+    bd.push({label:'Comportamiento en la app + datos declarados', sub:baseScore, weight:0.25});
+    const score = Math.round((total/wsum)*10);
+    return {score, breakdown:bd};
+  },
+  band(s){ if(s>=751)return['Óptimo','crédito ampliado']; if(s>=601)return['Bueno','crédito estándar'];
+           if(s>=451)return['Básico','crédito inicial menor']; return['En construcción','plan guiado']; }
+};
+
+/* --- CreditService: SIMULA desembolso vía BaaS --- */
+const CreditService = {
+  disburse(amount){
+    // INTEGRACIÓN REAL: Dock/Pomelo (issuing + cuentas) ejecuta el desembolso; SINPE acredita.
+    log('POST','/integracion/baas/desembolso','{ monto: '+amount+', moneda: "CRC/USD" } → 200 OK (SIMULADO)',true);
+    log('POST','/integracion/buro/reporte','Apertura reportada al buró de crédito (SIMULADO)',true);
+    return true;
+  },
+  pay(amount){
+    log('POST','/integracion/sinpe/pago','{ cuota: '+amount.toFixed(2)+' } → 200 OK (SIMULADO)',true);
+    log('POST','/integracion/buro/reporte','Pago puntual reportado al buró (SIMULADO)',true);
+    return true;
+  }
+};
+
+/* ================= UI / FLUJO ================= */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id); el.classList.add('active'); el.scrollTop=0;
+  if(id==='home') renderHome();
+  if(id==='profile') renderProfile();
+  if(id==='learn') renderLearn();
+  if(id==='credit') calc();
+  if(id==='pay') renderPay();
+  if(id==='score') renderScore();
+  if(id==='bankpicker') renderBanks();
+}
+function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+
+function doRegister(){
+  const n=document.getElementById('r_name').value.trim();
+  const p=document.getElementById('r_phone').value.trim();
+  const e=document.getElementById('r_email').value.trim();
+  if(!n||!p||!e){ document.getElementById('r_err').style.display='block'; return; }
+  document.getElementById('r_err').style.display='none';
+  DB=freshUser(); DB.name=n; DB.phone=p; DB.email=e; saveDB();
+  log('POST','/auth/registro','Usuario creado: '+n);
+  go('connect');
+}
+
+/* ===== MÓDULO: conexión a banca en línea (Open Finance · demo) ===== */
+const BANKS=[
+  {id:'bac',nm:'BAC Credomatic',c:'#C8102E'},
+  {id:'bncr',nm:'Banco Nacional',c:'#0F4C9A'},
+  {id:'bcr',nm:'Banco de Costa Rica',c:'#0072CE'},
+  {id:'popular',nm:'Banco Popular',c:'#E2231A'},
+  {id:'davi',nm:'Davivienda',c:'#ED1C27'},
+  {id:'scotia',nm:'Scotiabank',c:'#EC111A'},
+];
+let selBank=null, selSources=[];
+
+function startBank(){
+  selSources=[...document.querySelectorAll('#connect .tog.on')].map(t=>t.dataset.src);
+  if(selSources.length===0){ toast('Activa al menos una fuente de datos.'); return; }
+  go('bankpicker');
+}
+function renderBanks(){
+  const g=document.getElementById('bankGrid'); g.innerHTML='';
+  BANKS.forEach(b=>{ const el=document.createElement('div'); el.className='bank';
+    el.innerHTML='<div class="blg" style="background:'+b.c+'">'+b.nm.charAt(0)+'</div><div class="bnm">'+b.nm+'</div>';
+    el.onclick=()=>pickBank(b); g.appendChild(el); });
+}
+function pickBank(b){
+  selBank=b;
+  document.getElementById('loginHdr').style.background=b.c;
+  document.getElementById('loginLg').textContent=b.nm.charAt(0);
+  document.getElementById('loginNm').textContent=b.nm;
+  document.getElementById('cs_bank').textContent=b.nm;
+  log('GET','/integracion/open-finance/instituciones','Banco elegido: '+b.nm+' (SIMULADO)',true);
+  go('banklogin');
+}
+function genTransactions(){
+  return [
+    {t:'Depósito - Reparto (gig)',a:+58000,cat:'inc'},
+    {t:'Depósito - Ventas en línea',a:+42000,cat:'inc'},
+    {t:'Pago ICE - Electricidad',a:-18500,cat:'serv',ontime:true},
+    {t:'Pago AyA - Agua',a:-9200,cat:'serv',ontime:true},
+    {t:'Pago Internet (Kölbi)',a:-21000,cat:'serv',ontime:true},
+    {t:'Recarga celular',a:-7000,cat:'serv',ontime:true},
+    {t:'Pago tarjeta',a:-15000,cat:'serv',ontime:false},
+    {t:'Pago préstamo',a:-30000,cat:'serv',ontime:false},
+    {t:'Netflix',a:-6900,cat:'sub'},
+    {t:'Spotify',a:-3500,cat:'sub'},
+    {t:'Disney+',a:-4900,cat:'sub'},
+  ];
+}
+function computeFromTx(txs){
+  const serv=txs.filter(t=>t.cat==='serv'); const ontime=serv.filter(t=>t.ontime).length;
+  const servSub=Math.round(ontime/serv.length*100);
+  const subs=txs.filter(t=>t.cat==='sub').length; const subSub=Math.min(90,40+subs*15);
+  const incs=txs.filter(t=>t.cat==='inc').length; const incSub=Math.min(100,45+incs*15);
+  const devSub=60, baseSub=62;
+  const items=[
+    {label:'Pagos de servicios al día',sub:servSub,weight:0.30,on:selSources.includes('servicios')},
+    {label:'Ingresos verificables (gig)',sub:incSub,weight:0.20,on:selSources.includes('ingresos')},
+    {label:'Suscripciones activas',sub:subSub,weight:0.15,on:selSources.includes('suscripciones')},
+    {label:'Estabilidad del dispositivo',sub:devSub,weight:0.10,on:selSources.includes('dispositivo')},
+    {label:'Comportamiento + datos declarados',sub:baseSub,weight:0.25,on:true},
+  ];
+  let total=0; const bd=[];
+  items.forEach(it=>{ const s=it.on?it.sub:baseSub; total+=s*it.weight; bd.push({label:it.label,sub:s,weight:it.weight}); });
+  return {score:Math.round(total*10), breakdown:bd};
+}
+function bankConnect(){
+  go('bankloading');
+  const items=document.querySelectorAll('#bsteps div'); items.forEach(i=>i.classList.remove('done'));
+  log('POST','/integracion/open-finance/consentimiento','Autorización concedida para '+selBank.nm+' (SIMULADO)',true);
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i<items.length){ items[i].classList.add('done'); i++; }
+    else { clearInterval(iv); finishBank(); }
+  },650);
+}
+function finishBank(){
+  log('GET','/integracion/open-finance/transacciones','12 meses leídos de '+selBank.nm+' (SIMULADO)',true);
+  const txs=genTransactions();
+  const r=computeFromTx(txs);
+  log('POST','/scoring/calcular','Motor propio pondera las transacciones (real)');
+  DB.sources=selSources; DB.bank=selBank.nm; DB.transactions=txs;
+  DB.score=r.score; DB.breakdown=r.breakdown;
+  const b=ScoringEngine.band(r.score); DB.band=b[0];
+  DB.level = r.score>=751?3 : r.score>=601?2 : 1;
+  saveDB();
+  go('score');
+}
+
+function renderScore(){
+  if(!DB||DB.score==null) return;
+  const g=document.getElementById('g'), n=document.getElementById('gn'), gl=document.getElementById('gl');
+  gl.textContent=DB.band;
+  const target=DB.score, frac=Math.min(target/1000,1), deg=360*frac;
+  document.getElementById('bandTxt').textContent = DB.band==='En construcción' ? 'plan de construcción' : 'primer crédito';
+  let start=null;
+  function step(ts){ if(!start)start=ts; const pr=Math.min((ts-start)/900,1);
+    g.style.setProperty('--deg',(deg*pr)+'deg'); n.textContent=Math.round(target*pr);
+    if(pr<1) requestAnimationFrame(step); }
+  g.style.setProperty('--deg','0deg'); n.textContent='0'; requestAnimationFrame(step);
+  const bx=document.getElementById('breakdown'); bx.innerHTML='';
+  DB.breakdown.forEach(b=>{
+    const row=document.createElement('div'); row.className='factor';
+    row.innerHTML='<span style="flex:0 0 130px">'+b.label+'</span><span class="bar"><i style="width:'+b.sub+'%"></i></span><b style="color:var(--navy)">'+Math.round(b.weight*100)+'%</b>';
+    bx.appendChild(row);
+  });
+}
+
+function renderHome(){
+  if(!DB){ go('welcome'); return; }
+  document.getElementById('h_hi').textContent='Hola, '+DB.name.split(' ')[0];
+  document.getElementById('h_lvl').textContent='Nivel '+DB.level+' · Constructor';
+  document.getElementById('h_score').textContent=DB.score!=null?DB.score:'—';
+  document.getElementById('h_delta').textContent=DB.delta>0?('+'+DB.delta+' este mes'):'';
+  const cap = DB.level>=3?250:DB.level>=2?200:150;
+  if(DB.credit.active){
+    document.getElementById('h_creditcard').style.display='none';
+    document.getElementById('h_balancecard').style.display='block';
+    document.getElementById('h_balance').textContent='$'+DB.credit.balance.toFixed(2);
+    const left=3-DB.credit.paidInstallments;
+    document.getElementById('h_loaninfo').textContent='Crédito de $'+DB.credit.amount+' · cuota $'+DB.credit.installment.toFixed(2)+' · '+left+' cuotas restantes';
+  } else {
+    document.getElementById('h_creditcard').style.display='block';
+    document.getElementById('h_balancecard').style.display='none';
+    document.getElementById('h_avail').textContent='$'+cap;
+  }
+  document.getElementById('h_eduprog').style.width=(DB.eduDone/3*100)+'%';
+  const bars=document.getElementById('h_bars'); bars.innerHTML='';
+  const paid=DB.credit.paidInstallments||0;
+  document.getElementById('h_histsub').textContent = paid>0 ? (paid+' pago(s) reportado(s) al buró') : 'Aún sin pagos reportados';
+  for(let i=0;i<5;i++){ const b=document.createElement('i');
+    b.style.cssText='flex:1;border-radius:7px;height:'+(35+i*16)+'%;background:'+(i<paid?'var(--green)':'#d2d8e0');
+    bars.appendChild(b); }
+}
+
+let creditAmount=150;
+function calc(){
+  const cap = DB&&DB.level>=3?250:DB&&DB.level>=2?200:150;
+  const sl=document.getElementById('slider'); sl.max=cap; if(+sl.value>cap) sl.value=cap;
+  const m=+sl.value; creditAmount=m;
+  const rate = (DB&&DB.eduDone>=3)?0.029:0.035;
+  const interes=m*rate*3, comision=m*0.03, total=m+interes+comision, cuota=total/3;
+  const f=x=>'$'+x.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('amt').textContent='$'+m;
+  document.getElementById('kr').textContent=f(m);
+  document.getElementById('kc').textContent=f(cuota);
+  document.getElementById('kf').textContent=f(comision);
+  document.getElementById('kt').textContent=f(total);
+  document.getElementById('krate').textContent=(rate*100).toFixed(1)+'% mensual';
+}
+
+function doCredit(){
+  if(DB.credit.active){ toast('Ya tienes un crédito activo. Págalo para pedir otro.'); return; }
+  document.getElementById('creditBtn').style.display='none';
+  document.getElementById('creditLoad').style.display='block';
+  setTimeout(()=>{
+    const m=creditAmount; const rate=(DB.eduDone>=3)?0.029:0.035;
+    const total=m + m*rate*3 + m*0.03;
+    CreditService.disburse(m);
+    DB.credit={active:true, amount:m, balance:m, paidInstallments:0, installment:total/3, rate};
+    saveDB();
+    document.getElementById('camt').textContent='$'+m.toFixed(2);
+    document.getElementById('creditBtn').style.display='block';
+    document.getElementById('creditLoad').style.display='none';
+    go('confirm');
+  },1500);
+}
+
+function renderPay(){
+  if(!DB.credit.active){ toast('No tienes cuotas pendientes.'); go('home'); return; }
+  document.getElementById('pay_amt').textContent='$'+DB.credit.installment.toFixed(2);
+  document.getElementById('pay_left').textContent=(3-DB.credit.paidInstallments)+' de 3 cuotas restantes';
+}
+function doPay(){
+  document.getElementById('payBtn').style.display='none';
+  document.getElementById('payLoad').style.display='block';
+  setTimeout(()=>{
+    CreditService.pay(DB.credit.installment);
+    DB.credit.paidInstallments++;
+    DB.score=Math.min(1000, DB.score+15); DB.delta+=15;
+    DB.level = DB.score>=751?3 : DB.score>=601?2 : 1;
+    if(DB.credit.paidInstallments>=3){ DB.credit.active=false; toast('🎉 <b>Crédito completado.</b> Historial 100% positivo.'); }
+    else { toast('<b>+15 puntos.</b> Pago reportado al buró.'); }
+    saveDB();
+    document.getElementById('payBtn').style.display='block';
+    document.getElementById('payLoad').style.display='none';
+    go('home');
+  },1300);
+}
+
+const MODS=['¿Qué es un puntaje?','Cómo no caer en mora','Tasas e intereses'];
+function renderLearn(){
+  document.getElementById('edu_xp').textContent=DB.eduDone+' / 3 módulos';
+  const box=document.getElementById('modules'); box.innerHTML='';
+  MODS.forEach((m,i)=>{
+    const done=i<DB.eduDone;
+    const el=document.createElement('div'); el.className='module';
+    el.innerHTML='<div class="mic" style="background:'+(done?'var(--green)':'var(--yellow)')+'">'+(done?'✓':'▶')+'</div><div><div class="t">'+m+'</div><div class="s">'+(done?'Completado':'Toca para completar · 3 min')+'</div></div>';
+    if(!done) el.onclick=()=>completeModule(i);
+    box.appendChild(el);
+  });
+}
+function completeModule(i){
+  if(i!==DB.eduDone) { toast('Completa los módulos en orden.'); return; }
+  DB.eduDone++; DB.score=Math.min(1000,DB.score+8); DB.delta+=8;
+  log('POST','/educacion/completar','Módulo '+(i+1)+' completado (+8 pts, lógica propia)');
+  if(DB.eduDone>=3){ toast('🎓 <b>¡Tasa reducida a 2.9%!</b> y límite ampliado.'); }
+  else toast('<b>+8 puntos</b> por aprender.');
+  saveDB(); renderLearn();
+}
+
+function renderProfile(){
+  document.getElementById('p_name').textContent=DB.name;
+  document.getElementById('p_initial').textContent=DB.name.charAt(0).toUpperCase();
+  document.getElementById('p_lvl').textContent='Nivel '+DB.level+' · Constructor';
+  document.getElementById('p_score').textContent=DB.score!=null?DB.score:'—';
+  document.getElementById('p_paid').textContent=DB.credit.paidInstallments||0;
+}
+
+/* ===== MODO PRESENTACIÓN: acceso libre a todas las pantallas ===== */
+function demoSeed(){
+  DB={name:'Mariana Soto',phone:'+506 8888 8888',email:'mariana@email.com',
+      sources:['servicios','ingresos','suscripciones'],bank:'BAC Credomatic',transactions:[],
+      score:696, band:'Bueno', level:2, delta:33, eduDone:2,
+      breakdown:[{label:'Pagos de servicios al día',sub:67,weight:0.30},
+                 {label:'Ingresos verificables (gig)',sub:75,weight:0.20},
+                 {label:'Suscripciones activas',sub:85,weight:0.15},
+                 {label:'Estabilidad del dispositivo',sub:60,weight:0.10},
+                 {label:'Comportamiento + datos declarados',sub:62,weight:0.25}],
+      credit:{active:true,amount:150,balance:150,paidInstallments:1,installment:56.75,rate:0.035},
+      history:[]};
+  saveDB();
+  log('GET','/demo/seed','Usuario demo cargado para la presentación');
+  go('home');
+}
+function navTo(id){
+  var needsData=['score','home','credit','confirm','pay','learn','profile'];
+  if(needsData.indexOf(id)>=0 && (!DB || DB.score==null)) demoSeed();
+  go(id);
+}
+function resetApp(){
+  DB=null; try{ localStorage.removeItem(DB_KEY);}catch(e){}
+  document.getElementById('log').innerHTML='';
+  document.querySelectorAll('#connect .tog').forEach((t,i)=>{ t.classList.toggle('on', i<3); });
+  go('welcome');
+}
+
+(function(){
+  log('GET','/health','Backend Primo (simulado) iniciado');
+  if(DB && DB.score!=null){ go('home'); } else { DB=null; }
+})();
+</script>
+</body>
+</html>
